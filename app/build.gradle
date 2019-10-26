@@ -21,7 +21,6 @@ android {
                 install "six==1.10.0"
                 install "scipy==1.0.1"
                 install "LocalPackage-1.2.3-py2.py3-none-any.whl"
-                install "-r", "requirements.txt"
                 install "cv2==4.1.1.26"
             }
         }
