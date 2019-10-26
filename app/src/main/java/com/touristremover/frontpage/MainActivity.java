@@ -32,6 +32,9 @@ public class MainActivity extends AppCompatActivity {
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
 
+    /**
+     * source: https://developer.android.com/training/camera/photobasics?hl=en
+     */
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
@@ -40,12 +43,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * TODO: implement this function
-     * upon the click of the button invoke the camera and start taking photos
-     * @param view
+     * upon the click of the button, invokes the camera
+     * @param view: the button that's being pressed
      */
     public void takePhoto(View view) {
         dispatchTakePictureIntent();
     }
-
 }
