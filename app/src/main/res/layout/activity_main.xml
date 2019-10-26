@@ -35,7 +35,7 @@
         android:id="@+id/Action Trigger"
         android:layout_width="361dp"
         android:layout_height="526dp"
-        android:text="Button"
+        android:text="Click Here To Begin"
         tools:layout_editor_absoluteX="-2dp"
         tools:layout_editor_absoluteY="4dp" />
 
