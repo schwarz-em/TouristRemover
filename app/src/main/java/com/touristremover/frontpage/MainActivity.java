@@ -142,4 +142,8 @@ public class MainActivity extends AppCompatActivity {
     public void takePhoto(View view) {
         dispatchTakePictureIntent();
     }
+
+    public void timerControlledPhoto(){
+
+    }
 }

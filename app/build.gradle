@@ -1,15 +1,30 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.chaquo.python'        // Add this line
 
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "com.touristremover.frontpage"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
+        python {
+            buildPython "C:/Python36/python.exe"
+            buildPython "py -3.7"
+            pip {
+                install "six==1.10.0"
+                install "scipy==1.0.1"
+                install "LocalPackage-1.2.3-py2.py3-none-any.whl"
+                install "-r", "requirements.txt"
+                install "cv2==4.1.1.26"
+            }
+        }
     }
     buildTypes {
         release {
