@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,16 +32,8 @@ public class CameraTaking extends AppCompatActivity {
     private final int cameraId = 1;
     MediaRecorder mediaRecorder;
     private boolean isRecording = false;
-    Button captureButton = (Button) findViewById(R.id.button_capture);
-
-
-
-//    try {
-//        mCamera = Camera.open();
-//        Log.d(CameraCaptureActivity.LOG_TAG, "getCameraInstance()open:: " + camera);
-//    } catch (Exception e) {
-//        // check for exceptions
-//    }
+    Button captureButton;
+    private Camera.PictureCallback mPicture;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,40 +47,63 @@ public class CameraTaking extends AppCompatActivity {
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
 
+        mPicture = new Camera.PictureCallback() {
 
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+                final String TAG = "picture taking";
+                File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+                if (pictureFile == null){
+                    Log.d(TAG, "Error creating media file, check storage permissions");
+                    return;
+                }
 
+                try {
+                    FileOutputStream fos = new FileOutputStream(pictureFile);
+                    fos.write(data);
+                    fos.close();
+                } catch (FileNotFoundException e) {
+                    Log.d(TAG, "File not found: " + e.getMessage());
+                } catch (IOException e) {
+                    Log.d(TAG, "Error accessing file: " + e.getMessage());
+                }
+            }
+        };
+
+/*
         // Add a listener to the Capture button
+        captureButton = (Button) findViewById(R.id.button_capture);
         captureButton.setOnClickListener(
-                new View.OnClickListener(){
-                    public void onClick(View v) {
-                        if (isRecording) {
-                            // stop recording and release camera
-                            mediaRecorder.stop();  // stop the recording
-                            releaseMediaRecorder(); // release the MediaRecorder object
-                            mCamera.lock();         // take camera access back from MediaRecorder
+        new View.OnClickListener(){
+            public void onClick(View v) {
+                if (isRecording) {
+                    // stop recording and release camera
+                    mediaRecorder.stop();  // stop the recording
+                    releaseMediaRecorder(); // release the MediaRecorder object
+                    mCamera.lock();         // take camera access back from MediaRecorder
 
-                            // inform the user that recording has stoppe
-                            setCaptureButtonText("Capture");
-                            isRecording = false;
-                        } else {
-                            // initialize video camera
-                            if (prepareVideoRecorder()) {
-                                // Camera is available and unlocked, MediaRecorder is prepared,
-                                // now you can start recording
-                                mediaRecorder.start();
+                    // inform the user that recording has stoppe
+                    setCaptureButtonText("Capture");
+                    isRecording = false;
+                } else {
+                    // initialize video camera
+                    if (prepareVideoRecorder()) {
+                        // Camera is available and unlocked, MediaRecorder is prepared,
+                        // now you can start recording
+                        mediaRecorder.start();
 
-                                // inform the user that recording has started
-                                setCaptureButtonText("Stop");
-                                isRecording = true;
-                            } else {
-                                // prepare didn't work, release the camera
-                                releaseMediaRecorder();
-                                // inform user
-                            }
-                        }
+                        // inform the user that recording has started
+                        setCaptureButtonText("Stop");
+                        isRecording = true;
+                    } else {
+                        // prepare didn't work, release the camera
+                        releaseMediaRecorder();
+                        // inform user
                     }
                 }
-        );
+            }
+        }
+        );*/
     }
 
     public void setCaptureButtonText(String text) {
@@ -132,13 +149,20 @@ public class CameraTaking extends AppCompatActivity {
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
         // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
-        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+        // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
+        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_TIME_LAPSE_HIGH));
+
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        System.out.println("no fail or fail??");
 
         // Step 4: Set output file
         mediaRecorder.setOutputFile(getOutputMediaFile(MEDIA_TYPE_VIDEO).toString());
 
         // Step 5: Set the preview output
         mediaRecorder.setPreviewDisplay(mPreview.getHolder().getSurface());
+
+        mediaRecorder.setCaptureRate(1); // capture a frame every 10 seconds
+
 
         // Step 6: Prepare configured MediaRecorder
         try {
@@ -221,4 +245,6 @@ public class CameraTaking extends AppCompatActivity {
 
         return mediaFile;
     }
+
+
 }

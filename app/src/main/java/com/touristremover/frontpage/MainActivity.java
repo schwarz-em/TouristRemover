@@ -61,6 +61,10 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WAKE_LOCK}, requestCode);
             onRequestPermissionsResult(3, new String[]{Manifest.permission.WAKE_LOCK}, grantResults);
         }
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED ) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, requestCode);
+            onRequestPermissionsResult(3, new String[]{Manifest.permission.RECORD_AUDIO}, grantResults);
+        }
     }
 
     String currentPhotoPath;
@@ -117,6 +121,24 @@ public class MainActivity extends AppCompatActivity {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.uujm
                     Toast.makeText(MainActivity.this, "Permission denied to read your Wake CLock", Toast.LENGTH_SHORT).show();
+
+                    //app cannot function without this permission for now so close it...
+                    onDestroy();
+                }
+                return;
+            }
+            case 4: {
+
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    Log.d("permission", "granted");
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.uujm
+                    Toast.makeText(MainActivity.this, "Permission denied to read your Audio Permission", Toast.LENGTH_SHORT).show();
 
                     //app cannot function without this permission for now so close it...
                     onDestroy();
