@@ -35,8 +35,8 @@
 
     <Button
         android:id="@+id/ActionTrigger"
-        android:layout_width="382dp"
-        android:layout_height="446dp"
+        android:layout_width="386dp"
+        android:layout_height="174dp"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="99dp"
@@ -44,5 +44,17 @@
         android:text="Click Here To Begin"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/goodButton"
+        android:layout_width="335dp"
+        android:layout_height="228dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginBottom="16dp"
+        android:onClick="goodOnClick"
+        android:text="Click this for experimental features"
+        app:layout_constraintBottom_toTopOf="@+id/nav_view"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
