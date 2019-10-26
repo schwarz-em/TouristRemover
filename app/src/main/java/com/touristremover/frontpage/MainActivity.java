@@ -51,7 +51,11 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navView, navController);
         if (ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
-            onRequestPermissionsResult(requestCode, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, grantResults);
+            onRequestPermissionsResult(1, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, grantResults);
+        }
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED ) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, requestCode);
+            onRequestPermissionsResult(2, new String[]{Manifest.permission.CAMERA}, grantResults);
         }
     }
 
@@ -73,6 +77,24 @@ public class MainActivity extends AppCompatActivity {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.uujm
                     Toast.makeText(MainActivity.this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+
+                    //app cannot function without this permission for now so close it...
+                    onDestroy();
+                }
+                return;
+            }
+            case 2: {
+
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    Log.d("permission", "granted");
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.uujm
+                    Toast.makeText(MainActivity.this, "Permission denied to read your Camera", Toast.LENGTH_SHORT).show();
 
                     //app cannot function without this permission for now so close it...
                     onDestroy();
