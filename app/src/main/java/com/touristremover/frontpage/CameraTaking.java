@@ -21,11 +21,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 
 public class CameraTaking extends AppCompatActivity {
     /** Called when the activity is first created. */
+
+    private int imageNumber = 0;
 
     private Camera mCamera;
     private CameraPreview mPreview;
@@ -33,7 +38,8 @@ public class CameraTaking extends AppCompatActivity {
     MediaRecorder mediaRecorder;
     private boolean isRecording = false;
     Button captureButton;
-    private Camera.PictureCallback mPicture;
+    private final int photoNumber = 1;
+    private final int period = 120;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,67 +53,53 @@ public class CameraTaking extends AppCompatActivity {
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
 
-        mPicture = new Camera.PictureCallback() {
-
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
-                final String TAG = "picture taking";
-                File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-                if (pictureFile == null){
-                    Log.d(TAG, "Error creating media file, check storage permissions");
-                    return;
-                }
-
-                try {
-                    FileOutputStream fos = new FileOutputStream(pictureFile);
-                    fos.write(data);
-                    fos.close();
-                } catch (FileNotFoundException e) {
-                    Log.d(TAG, "File not found: " + e.getMessage());
-                } catch (IOException e) {
-                    Log.d(TAG, "Error accessing file: " + e.getMessage());
-                }
-            }
-        };
-
-/*
-        // Add a listener to the Capture button
         captureButton = (Button) findViewById(R.id.button_capture);
+
         captureButton.setOnClickListener(
-        new View.OnClickListener(){
-            public void onClick(View v) {
-                if (isRecording) {
-                    // stop recording and release camera
-                    mediaRecorder.stop();  // stop the recording
-                    releaseMediaRecorder(); // release the MediaRecorder object
-                    mCamera.lock();         // take camera access back from MediaRecorder
-
-                    // inform the user that recording has stoppe
-                    setCaptureButtonText("Capture");
-                    isRecording = false;
-                } else {
-                    // initialize video camera
-                    if (prepareVideoRecorder()) {
-                        // Camera is available and unlocked, MediaRecorder is prepared,
-                        // now you can start recording
-                        mediaRecorder.start();
-
-                        // inform the user that recording has started
-                        setCaptureButtonText("Stop");
-                        isRecording = true;
-                    } else {
-                        // prepare didn't work, release the camera
-                        releaseMediaRecorder();
-                        // inform user
-                    }
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // get an image from the camera
+                    takesSeriesPhotos();
                 }
             }
-        }
-        );*/
+        );
     }
 
-    public void setCaptureButtonText(String text) {
-        captureButton.setText(text);
+    Camera.PictureCallback mPicture = new Camera.PictureCallback() {
+
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+            final String TAG = "picture taken";
+            Log.d(TAG, "media file creating process started");
+            File pictureFile = getOutputMediaFile(1);
+            if (pictureFile == null) {
+                Log.d(TAG, "Error creating media file, check storage permissions");
+                return;
+            }
+
+            try {
+                FileOutputStream fos = new FileOutputStream(pictureFile);
+                fos.write(data);
+                fos.close();
+            } catch (FileNotFoundException e) {
+                Log.d(TAG, "File not found: " + e.getMessage());
+            } catch (IOException e) {
+                Log.d(TAG, "Error accessing file: " + e.getMessage());
+            }
+        }
+    };
+
+
+    public void takesSeriesPhotos() {
+        for (int i = 0; i < photoNumber; i++) {
+            mCamera.takePicture(null, null, mPicture);
+            try {
+                TimeUnit.SECONDS.sleep(period);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     /** Check if this device has a camera */
@@ -134,70 +126,8 @@ public class CameraTaking extends AppCompatActivity {
         return c; // returns null if camera is unavailable
     }
 
-
-    private boolean prepareVideoRecorder(){
-        final String TAG = "prepare video recorder";
-        mCamera = getCameraInstance();
-        mediaRecorder = new MediaRecorder();
-
-        // Step 1: Unlock and set camera to MediaRecorder
-        mCamera.unlock();
-        mediaRecorder.setCamera(mCamera);
-
-        // Step 2: Set sources
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-
-        // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
-        // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
-        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_TIME_LAPSE_HIGH));
-
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        System.out.println("no fail or fail??");
-
-        // Step 4: Set output file
-        mediaRecorder.setOutputFile(getOutputMediaFile(MEDIA_TYPE_VIDEO).toString());
-
-        // Step 5: Set the preview output
-        mediaRecorder.setPreviewDisplay(mPreview.getHolder().getSurface());
-
-        mediaRecorder.setCaptureRate(1); // capture a frame every 10 seconds
-
-
-        // Step 6: Prepare configured MediaRecorder
-        try {
-            mediaRecorder.prepare();
-        } catch (IllegalStateException e) {
-            Log.d(TAG, "IllegalStateException preparing MediaRecorder: " + e.getMessage());
-            releaseMediaRecorder();
-            return false;
-        } catch (IOException e) {
-            Log.d(TAG, "IOException preparing MediaRecorder: " + e.getMessage());
-            releaseMediaRecorder();
-            return false;
-        }
-        return true;
-    }
-
-
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        releaseMediaRecorder();       // if you are using MediaRecorder, release it first
-        releaseCamera();              // release the camera immediately on pause event
-    }
-
-    private void releaseMediaRecorder(){
-        if (mediaRecorder != null) {
-            mediaRecorder.reset();   // clear recorder configuration
-            mediaRecorder.release(); // release the recorder object
-            mediaRecorder = null;
-            mCamera.lock();           // lock camera for later use
-        }
-    }
-
     private void releaseCamera(){
+        mCamera.stopPreview();
         if (mCamera != null){
             mCamera.release();        // release the camera for other applications
             mCamera = null;
@@ -210,6 +140,15 @@ public class CameraTaking extends AppCompatActivity {
     /** Create a file Uri for saving an image or video */
     private static Uri getOutputMediaFileUri(int type){
         return Uri.fromFile(getOutputMediaFile(type));
+    }
+
+
+    private File getInternalOutputFile() {
+        File mediaStorageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                "IMG_"+ imageNumber + ".jpg");
+        imageNumber++;
+        return mediaFile;
     }
 
     /** Create a File for saving an image or video */
