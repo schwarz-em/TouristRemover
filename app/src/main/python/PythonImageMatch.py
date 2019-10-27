@@ -2,10 +2,12 @@
 import numpy as np
 import cv2
 
-def gen_hom_matrix(filename1, filename2):
+
+def get_image(filename):
+    return cv2.imread(filename)
+
+def gen_hom_matrix(base, curr):
     # load images
-    base = cv2.imread(filename1)
-    curr = cv2.imread(filename2)
 
     #cv2.imshow('base', base)
 
@@ -43,5 +45,19 @@ def gen_image(curr, base, transformation):
     new_image = cv2.addWeighted(mod_photo, .5, base, .5, 1)
     return new_image
 
+def stich_multiple_image(image_list):
+    base = image_list[0]
+    height, width = base.shape[:2]
+    print(height, width)
+    mod_photo = []
+    for element in range(1, len(image_list)):
+        matrix, _ = gen_hom_matrix(base, image_list[element])
+        mod_photo.append(cv2.warpPerspective(image_list[element], matrix, (width, height)))
+    base = cv2.addWeighted(base, 1/(2*len(image_list)), base, 1/(2*len(image_list)), 1)
+    for photo in mod_photo:
+        base = cv2.addWeighted(photo, 1/len(image_list), base, 1, 1)
+    return base
+
 if __name__ == "__main__":
-    cv2.imwrite('new.jpg', python_image_match('images1.jpg', 'images2.jpg'))
+    images = ['image4.jpg', 'image2.jpg', 'image3.jpg', 'image1.jpg']
+    cv2.imwrite('new.jpg',stich_multiple_image([get_image(file) for file in images]))

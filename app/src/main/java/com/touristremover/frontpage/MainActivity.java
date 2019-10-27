@@ -216,6 +216,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void goodOnClick(View v) {
-        startActivity(new Intent(MainActivity.this, CameraTaking.class));
+        startActivity(new Intent(MainActivity.this, DisplayingPhoto.class));
     }
 }
